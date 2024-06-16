@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Usuario {
+  user_id          Int        @id @default(autoincrement())
+  dir_correo       String
+  descripcion      String
+  fecha_creacion   DateTime
+  correosEnviados  Correo[]   @relation("Remitente")
+  correosRecibidos Correo[]   @relation("Destinatario")
+  direccionesBloqueadas DireccionBloqueada[]
+  direccionesFavoritas DireccionFavorita[]
+}
+
+model Correo {
+  id_correo       Int      @id @default(autoincrement())
+  remitente_id    Int
+  destinatario_id Int
+  asunto          String
+  cuerpo          String
+  fecha_envio     DateTime
+  leido           Boolean
+  es_favorito     Boolean
+  remitente       Usuario  @relation("Remitente", fields: [remitente_id], references: [user_id])
+  destinatario    Usuario  @relation("Destinatario", fields: [destinatario_id], references: [user_id])
+}
+
+model DireccionBloqueada {
+  user_id             Int
+  direccion_bloqueada String
+  fecha_bloqueo       DateTime
+  usuario             Usuario @relation(fields: [user_id], references: [user_id])
+
+  @@id([user_id, direccion_bloqueada])
+}
+
+model DireccionFavorita {
+  user_id             Int
+  direccion_favorita  String
+  fecha_agregado      DateTime
+  usuario             Usuario @relation(fields: [user_id], references: [user_id])
+
+  @@id([user_id, direccion_favorita])
+}
