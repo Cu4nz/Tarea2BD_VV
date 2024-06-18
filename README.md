@@ -142,6 +142,3 @@
 3. Ejecutar las migraciones de Prisma: `npx prisma migrate dev`
 4. Poblar la base de datos con datos iniciales si es necesario.
 
-### Consideraciones
-- Código bien comentado y siguiendo buenas prácticas.
-- Log de todas las consultas HTTP realizadas.
