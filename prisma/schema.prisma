@@ -15,15 +15,17 @@ datasource db {
 
 
 model Usuario {
-  user_id          Int        @id @default(autoincrement())
-  dir_correo       String
-  descripcion      String
-  fecha_creacion   DateTime
-  correosEnviados  Correo[]   @relation("Remitente")
-  correosRecibidos Correo[]   @relation("Destinatario")
-  direccionesBloqueadas DireccionBloqueada[]
-  direccionesFavoritas DireccionFavorita[]
+  user_id                Int                  @id @default(autoincrement())
+  dir_correo             String
+  nombre                 String 
+  descripcion            String
+  fecha_creacion         DateTime
+  correosEnviados        Correo[]             @relation("Remitente")
+  correosRecibidos       Correo[]             @relation("Destinatario")
+  direccionesBloqueadas  DireccionBloqueada[]
+  direccionesFavoritas   DireccionFavorita[]
 }
+
 
 model Correo {
   id_correo       Int      @id @default(autoincrement())
@@ -38,6 +40,9 @@ model Correo {
   destinatario    Usuario  @relation("Destinatario", fields: [destinatario_id], references: [user_id])
 }
 
+
+
+
 model DireccionBloqueada {
   user_id             Int
   direccion_bloqueada String
@@ -46,6 +51,7 @@ model DireccionBloqueada {
 
   @@id([user_id, direccion_bloqueada])
 }
+
 
 model DireccionFavorita {
   user_id             Int
