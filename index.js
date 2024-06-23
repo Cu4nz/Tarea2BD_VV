@@ -5,13 +5,6 @@ const app = new Elysia();
 const prisma = new PrismaClient();
 
 
-//* Middleware para loguear cada solicitud
-//app.use(async (context, next) => {
-    //console.log(`Solicitud: ${context.method} ${context.path}`);
-  //  await next();
-//});
-//
-
 // Endpoint para registrar un usuario
 app.post('/api/registrar', async (req, res) => {
     const { nombre, correo, clave, descripcion } = req.body;
