@@ -17,7 +17,8 @@ datasource db {
 model Usuario {
   user_id                Int                  @id @default(autoincrement())
   dir_correo             String
-  nombre                 String 
+  nombre                 String
+  clave                  String               //Contra 
   descripcion            String
   fecha_creacion         DateTime
   correosEnviados        Correo[]             @relation("Remitente")
