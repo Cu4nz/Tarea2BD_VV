@@ -1,8 +1,9 @@
 import { Elysia } from 'elysia';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 const app = new Elysia();
+const prisma = new PrismaClient();
+
 
 //* Middleware para loguear cada solicitud
 //app.use(async (context, next) => {
@@ -21,6 +22,7 @@ app.post('/api/registrar', async (req, res) => {
                 nombre: nombre,
                 dir_correo: correo,
                 descripcion: descripcion,
+                clave: clave,            //
                 fecha_creacion: new Date(), // Establecer la fecha de creación
             },
         });
@@ -86,36 +88,41 @@ app.get('/api/informacion/:correo', async (req, res) => {
 });
 
 
-
-
-
 // Endpoint para marcar un correo como favorito
 app.post('/api/marcarcorreo', async (req, res) => {
     const { correo, clave, id_correo_favorito } = req.body;
     try {
-      // Buscar usuario por correo
-      const usuario = await prisma.usuario.findUnique({
-        where: { dir_correo: correo }
-      });
-      if (usuario) {
-        // Actualizar el estado de favorito del correo
-        const correoFavorito = await prisma.correo.update({
-          where: { id_correo: id_correo_favorito },
-          data: {
-            es_favorito: true,
-          },
+        // Buscar usuario por correo
+        const usuario = await prisma.usuario.findUnique({
+            where: { dir_correo: correo }
         });
-        // Respuesta exitosa
-        res.json({ estado: 200, mensaje: 'Correo marcado como favorito', correoFavorito });
-      } else {
-        // Usuario no encontrado
-        res.json({ estado: 404, mensaje: 'Usuario no encontrado' });
-      }
+        if (usuario) {
+            // Verificar que el correo pertenece al usuario
+            const correo = await prisma.correo.findUnique({
+                where: { id_correo: id_correo_favorito }
+            });
+            if (correo && correo.destinatario_id === usuario.user_id) {
+                // Actualizar el estado de favorito del correo
+                const correoFavorito = await prisma.correo.update({
+                    where: { id_correo: id_correo_favorito },
+                    data: {
+                        es_favorito: true,
+                    },
+                });
+                // Respuesta exitosa
+                res.json({ estado: 200, mensaje: 'Correo marcado como favorito', correoFavorito });
+            } else {
+                res.json({ estado: 404, mensaje: 'Correo no encontrado o no pertenece al usuario' });
+            }
+        } else {
+            // Usuario no encontrado
+            res.json({ estado: 404, mensaje: 'Usuario no encontrado' });
+        }
     } catch (error) {
-      // Manejo de errores
-      res.json({ estado: 400, mensaje: 'Error al marcar correo como favorito', error: error.message });
+        // Manejo de errores
+        res.json({ estado: 400, mensaje: 'Error al marcar correo como favorito', error: error.message });
     }
-  });
+});
   
 
 // Endpoint para desmarcar un correo como favorito
@@ -127,27 +134,62 @@ app.delete('/api/desmarcarcorreo', async (req, res) => {
             where: { dir_correo: correo }
         });
         if (usuario) {
-            // Actualizar el estado del correo a no favorito
-            await prisma.correo.updateMany({
-                where: {
-                    id_correo: id_correo_favorito,
-                    destinatario_id: usuario.user_id, // Asegurarse de que el correo pertenece al usuario
-                },
-                data: {
-                    es_favorito: false,
-                },
+            // Verificar que el correo pertenece al usuario
+            const correo = await prisma.correo.findUnique({
+                where: { id_correo: id_correo_favorito }
             });
-            // Respuesta exitosa
-            res.json({ estado: 200, mensaje: 'Correo desmarcado como favorito' });
+            if(correo && correo.destinatario_id === usuario.user_id){
+                //Actualizar el estado del correo a no favorito
+                await prisma.correo.update({
+                    where: {id_correo: id_correo_favorito },
+                    data: {
+                        es_favorito: false,
+                    },
+                });
+                //Respuesta exitosa
+                res.json({ estado: 200, mensaje: 'Correo desmarcado como favorito'});
+            } else{
+                res.json({ estado : 404, mensaje: ' Correo no encontrado o no pertenece al usuario'});
+            }
+    } else{
+        //usuario no encontrado
+        res.json({ estado: 404, mensaje: 'Correo no encontrado'});
+    }
+} catch (error) {
+    // Manejo de errores
+    res.json({ estado: 400, mensaje: 'Error al desmarcar correo como favorito', error: error.message });
+}
+
+});
+
+
+
+// Endpoint para iniciar sesión
+app.post('/api/login', async (req, res) => {
+    const { correo, clave } = req.body;
+    try {
+        // Buscar usuario por correo
+        const usuario = await prisma.usuario.findUnique({
+            where: { dir_correo: correo }
+        });
+        if (usuario) {
+            // Verificar que la clave coincide
+            if (usuario.clave === clave) {
+                res.json({ estado: 200, mensaje: 'Inicio de sesión exitoso', usuario });
+            } else {
+                res.json({ estado: 400, mensaje: 'Contraseña incorrecta' });
+            }
         } else {
-            // Usuario no encontrado
-            res.json({ estado: 404, mensaje: 'Usuario no encontrado' });
+            res.json({ estado: 404, mensaje: 'Usuario no encontrado. Por favor, regístrese.' });
         }
     } catch (error) {
         // Manejo de errores
-        res.json({ estado: 400, mensaje: 'Error al desmarcar correo como favorito', error: error.message });
+        res.json({ estado: 400, mensaje: 'Error al iniciar sesión', error: error.message });
     }
 });
+
+
+
 
 // Crear servidor HTTP y pasar el manejador de Elysia
 const PORT = process.env.PORT || 3000;
