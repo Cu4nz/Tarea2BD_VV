@@ -11,44 +11,57 @@ def registrar():
         
         #Cambiar url acorde, probar
         respuesta = requests.post(f"{url}/registrar", json={
-                    "nombre" : nombre,
-                    "correo" : email,
-                    "clave" : clave ,
-                    "descripcion" : desc
+                    'nombre':nombre,
+                    'correo':email,
+                    'clave':clave ,
+                    'descripcion':desc
                     })
-        print(respuesta.status_code)
-        if respuesta.status_code == 200:
+        respuesta_json = respuesta.json()
+        codigo=respuesta_json('estado')
+        if codigo == 200:
             respuesta_json = respuesta.json()
             print(f"Usuario registrado correctamente: {respuesta_json.get('mensaje')}")
             break
-        elif respuesta.status_code==400:
-            respuesta_json = respuesta.json()
+        elif codigo==400:
             print(f"{respuesta_json.get('mensaje')}")
             
 
 def bloquear():
-    correo_usuario=input("Confirmar correo de sesión actual: ")
-    clave_usuario=input("Confirmar clave: ")
-    correo_bloq=input("Correo de usuario a bloquear: ")
-    respuesta=requests.post("f{url}/bloquear", json={
-        "correo" : correo_usuario,
-        "clave" : clave_usuario,
-        "correo_bloquear" : correo_bloq})
-    
-    if respuesta.status_code == 200:
-        respuesta_json = respuesta.json()
-        print(f"{respuesta_json.get('mensaje')}")
-    elif respuesta.status_code==400:
-        respuesta_json = respuesta.json()
-        print(f"Datos del usuario: {respuesta_json.get('usuario')}")
+    while True:
+        correo_usuario=input("Confirmar correo de sesión actual: ")
+        clave_usuario=input("Confirmar clave: ")
+        correo_bloq=input("Correo de usuario a bloquear: ")
+        respuesta=requests.post("f{url}/bloquear", json={
+            "correo" : correo_usuario,
+            "clave" : clave_usuario,
+            "correo_bloquear" : correo_bloq})
+        
+        if respuesta.status_code == 200:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
+            break
+        elif respuesta.status_code==400:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
         
             
     
 def ver_usuario():
-    correo_ver=input("Ingrese el correo del usuario a ver: ")
-    respuesta=requests.get(f"{url}/informacion/:correo",json={
-        "correo" : correo_ver
-        })
+    while True:
+        correo_ver=input("Ingrese el correo del usuario a ver: ")
+        respuesta=requests.get(f"{url}/informacion/:correo",json={
+            "correo" : correo_ver
+            })
+        if respuesta.status_code == 200:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get)
+            break
+        elif respuesta.status_code == 404:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
+        elif respuesta.status_code == 404:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
 
 def marcar_favorito():
     correo_fav=input("Ingrese correo: ")
@@ -59,19 +72,14 @@ def marcar_favorito():
         "clave" : clave_fav,
         "id_correo_favorito" : id_correo
         })
+    if respuesta.status_code == 200:
+        respuesta_json = respuesta.json()
+        print(respuesta_json.get('mensaje'))
+    if respuesta.status_code == 200:
+        respuesta_json = respuesta.json()
+        print(respuesta_json.get('mensaje'))
 
-def desmarcar_favorito():
-    correo_del=input("Ingrese correo: ")
-    clave_del=input("Ingrese clave: ")
-    id_correo=input("Ingrese la id del correo: ")
-    respuesta=requests.delete(f"{url}/desmarcarcorreo", json={
-        "correo" : correo_del,
-        "clave" : clave_del,
-        "id_correo_favorito" : id_correo
-        })
-    
 
-    
         
 def ingresar():
     while True:
@@ -81,12 +89,18 @@ def ingresar():
             "correo" : correo,
             "clave" : clave
             })
-        if respuesta==1:
-            print("Correo no existe, intente nuevamente.")
-        elif respuesta==2:
-            print("Clave incorrecta")
-        else:
+        respuesta_json = respuesta.json()
+        codigo=respuesta_json('estado')
+        if codigo==200:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
             menu()
+        elif codigo==400:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
+        elif codigo==404:
+            prespuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
             
 def enviar():
     correo_destino=input("Ingrese correo del destinatario: ")
@@ -119,8 +133,7 @@ def menu():
     print("3. Bloquear a usuario: ")
     print("4. Ver correos favoritos ")
     print("5. Marcar correo como favorito ")
-    print("6. Desmarcar correo como favorito ")
-    print("7. Cerrar sesión")
+    print("6. Cerrar sesión")
     
 
 if __name__ == "__main__":
