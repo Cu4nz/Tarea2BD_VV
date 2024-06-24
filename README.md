@@ -34,7 +34,6 @@
 - **ORM**: PrismaJS
 
 ### Archivos
-- `requirements.txt`: Contiene las dependencias de la API.
 - `README.txt`: Instrucciones detalladas para ejecutar la API.
 
 ### Instrucciones para ejecutar la API
