@@ -10,7 +10,7 @@ def registrar():
         desc=input("Ingrese una descripción del perfil: ")
         
         #Cambiar url acorde, probar
-        respuesta = requests.post(f"{url}/register", json={
+        respuesta = requests.post(f"{url}/registrar", json={
                     "nombre" : nombre,
                     "correo" : email,
                     "clave" : clave ,
