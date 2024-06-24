@@ -17,7 +17,7 @@ def registrar():
                     'descripcion':desc
                     })
         respuesta_json = respuesta.json()
-        codigo=respuesta_json('estado')
+        codigo=respuesta_json.get('estado')
         if codigo == 200:
             respuesta_json = respuesta.json()
             print(f"Usuario registrado correctamente: {respuesta_json.get('mensaje')}")
@@ -36,11 +36,14 @@ def bloquear():
             "clave" : clave_usuario,
             "correo_bloquear" : correo_bloq})
         
-        if respuesta.status_code == 200:
+        respuesta_json = respuesta.json()
+        codigo=respuesta_json.get('estado')
+        
+        if codigo == 200:
             respuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
             break
-        elif respuesta.status_code==400:
+        elif codigo == 400:
             respuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
         
@@ -52,32 +55,39 @@ def ver_usuario():
         respuesta=requests.get(f"{url}/informacion/:correo",json={
             "correo" : correo_ver
             })
-        if respuesta.status_code == 200:
+        respuesta_json = respuesta.json()
+        codigo=respuesta_json.get('estado')
+        if codigo == 200:
             respuesta_json = respuesta.json()
             print(respuesta_json.get)
             break
-        elif respuesta.status_code == 404:
+        elif codigo == 404:
             respuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
-        elif respuesta.status_code == 404:
+        elif codigo == 404:
             respuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
 
 def marcar_favorito():
-    correo_fav=input("Ingrese correo: ")
-    clave_fav=input("Ingrese clave: ")
-    id_correo=input("Ingrese la id del correo: ")
-    respuesta=requests.post(f"{url}/marcarcorreo", json={
-        "correo" : correo_fav,
-        "clave" : clave_fav,
-        "id_correo_favorito" : id_correo
-        })
-    if respuesta.status_code == 200:
+    while True:
+        
+        correo_fav=input("Ingrese correo: ")
+        clave_fav=input("Ingrese clave: ")
+        id_correo=input("Ingrese la id del correo: ")
+        respuesta=requests.post(f"{url}/marcarcorreo", json={
+            "correo" : correo_fav,
+            "clave" : clave_fav,
+            "id_correo_favorito" : id_correo
+            })
         respuesta_json = respuesta.json()
-        print(respuesta_json.get('mensaje'))
-    if respuesta.status_code == 200:
-        respuesta_json = respuesta.json()
-        print(respuesta_json.get('mensaje'))
+        codigo=respuesta_json.get('estado')
+        if codigo== 200:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
+            break
+        if codigo == 404:
+            respuesta_json = respuesta.json()
+            print(respuesta_json.get('mensaje'))
 
 
         
@@ -90,7 +100,7 @@ def ingresar():
             "clave" : clave
             })
         respuesta_json = respuesta.json()
-        codigo=respuesta_json('estado')
+        codigo=respuesta_json.get('estado')
         if codigo==200:
             respuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
@@ -102,15 +112,7 @@ def ingresar():
             prespuesta_json = respuesta.json()
             print(respuesta_json.get('mensaje'))
             
-def enviar():
-    correo_destino=input("Ingrese correo del destinatario: ")
-    mensaje=input("Ingrese mensaje a enviar: ")
-    respuesta=requests.post(f"{url}/enviarcorreo",json={
-        "correo" : correo_destino,
-        "mensaje" : mensaje
-        })
-    
-    
+
 
 def main():
     while True:
@@ -128,12 +130,11 @@ def main():
 
 def menu():
     print("Menú \n")
-    print("1. Enviar correo: ")
-    print("2. Ver informaci´on de una direcci´on de correo electrónico ")
-    print("3. Bloquear a usuario: ")
-    print("4. Ver correos favoritos ")
-    print("5. Marcar correo como favorito ")
-    print("6. Cerrar sesión")
+    print("1. Ver informaci´on de una direcci´on de correo electrónico ")
+    print("2. Bloquear a usuario: ")
+    print("3. Ver correos favoritos ")
+    print("4. Marcar correo como favorito ")
+    print("5. Cerrar sesión")
     
 
 if __name__ == "__main__":
