@@ -1,13 +1,19 @@
 import { Elysia } from 'elysia';
 import { PrismaClient } from '@prisma/client';
+//import bodyParser from 'body-parser';
 
 const app = new Elysia();
 const prisma = new PrismaClient();
 
 
 // Endpoint para registrar un usuario
-app.post('/api/registrar', async (req, res) => {
-    const { nombre, correo, clave, descripcion } = req.body;
+app.post('/api/registrar', async ({ body }) => {
+    const { nombre, correo, clave, descripcion } = body;
+
+    if (!nombre || !correo || !clave || !descripcion) {
+        return { estado: 400, mensaje: 'Todos los campos son requeridos' };
+    }
+
     try {
         // Crear un nuevo usuario en la base de datos
         const usuario = await prisma.usuario.create({
@@ -15,15 +21,16 @@ app.post('/api/registrar', async (req, res) => {
                 nombre: nombre,
                 dir_correo: correo,
                 descripcion: descripcion,
-                clave: clave,            //
+                clave: clave,
                 fecha_creacion: new Date(), // Establecer la fecha de creación
             },
         });
         // Respuesta exitosa
-        res.json({ estado: 200, mensaje: 'Usuario registrado correctamente', usuario });
+        return { estado: 200, mensaje: 'Usuario registrado correctamente', usuario };
     } catch (error) {
+        console.error(error); // Agregar esta línea para imprimir el error en la consola
         // Manejo de errores
-        res.json({ estado: 400, mensaje: 'Error al registrar usuario', error: error.message });
+        return { estado: 500, mensaje: 'Error al registrar usuario', error: error.message };
     }
 });
 
@@ -33,7 +40,7 @@ app.post('/api/bloquear', async (req, res) => {
     const { correo, clave, correo_bloquear } = req.body;
     try {
         // Buscar usuario por correo
-        const usuario = await prisma.usuario.findUnique({
+        const Usuario = await prisma.Usuario.findUnique({
             where: { dir_correo: correo }
         });
         if (usuario) {
@@ -64,12 +71,12 @@ app.get('/api/informacion/:correo', async (req, res) => {
     const { correo } = req.params;
     try {
         // Buscar usuario por correo
-        const usuario = await prisma.usuario.findUnique({
+        const Usuario = await prisma.Usuario.findUnique({
             where: { dir_correo: correo },
         });
-        if (usuario) {
+        if (Usuario) {
             // Respuesta con información del usuario
-            res.json({ estado: 200, nombre: usuario.nombre, correo: usuario.dir_correo, descripcion: usuario.descripcion });
+            res.json({ estado: 200, nombre: Usuario.nombre, correo: Usuario.dir_correo, descripcion: Usuario.descripcion });
         } else {
             // Usuario no encontrado
             res.json({ estado: 404, mensaje: 'Usuario no encontrado' });
@@ -86,15 +93,15 @@ app.post('/api/marcarcorreo', async (req, res) => {
     const { correo, clave, id_correo_favorito } = req.body;
     try {
         // Buscar usuario por correo
-        const usuario = await prisma.usuario.findUnique({
+        const Usuario = await prisma.Usuario.findUnique({
             where: { dir_correo: correo }
         });
-        if (usuario) {
+        if (Usuario) {
             // Verificar que el correo pertenece al usuario
             const correo = await prisma.correo.findUnique({
                 where: { id_correo: id_correo_favorito }
             });
-            if (correo && correo.destinatario_id === usuario.user_id) {
+            if (correo && correo.destinatario_id === Usuario.user_id) {
                 // Actualizar el estado de favorito del correo
                 const correoFavorito = await prisma.correo.update({
                     where: { id_correo: id_correo_favorito },
@@ -123,15 +130,15 @@ app.delete('/api/desmarcarcorreo', async (req, res) => {
     const { correo, clave, id_correo_favorito } = req.body;
     try {
         // Buscar usuario por correo
-        const usuario = await prisma.usuario.findUnique({
+        const Usuario = await prisma.Usuario.findUnique({
             where: { dir_correo: correo }
         });
-        if (usuario) {
+        if (Usuario) {
             // Verificar que el correo pertenece al usuario
             const correo = await prisma.correo.findUnique({
                 where: { id_correo: id_correo_favorito }
             });
-            if(correo && correo.destinatario_id === usuario.user_id){
+            if(correo && correo.destinatario_id === Usuario.user_id){
                 //Actualizar el estado del correo a no favorito
                 await prisma.correo.update({
                     where: {id_correo: id_correo_favorito },
@@ -162,13 +169,13 @@ app.post('/api/login', async (req, res) => {
     const { correo, clave } = req.body;
     try {
         // Buscar usuario por correo
-        const usuario = await prisma.usuario.findUnique({
+        const Usuario = await prisma.Usuario.findUnique({
             where: { dir_correo: correo }
         });
-        if (usuario) {
+        if (Usuario) {
             // Verificar que la clave coincide
-            if (usuario.clave === clave) {
-                res.json({ estado: 200, mensaje: 'Inicio de sesión exitoso', usuario });
+            if (Usuario.clave === clave) {
+                res.json({ estado: 200, mensaje: 'Inicio de sesión exitoso', Usuario });
             } else {
                 res.json({ estado: 400, mensaje: 'Contraseña incorrecta' });
             }
